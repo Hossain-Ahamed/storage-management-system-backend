@@ -20,7 +20,6 @@ export const auth = () => {
     ) as JwtPayload;
 
     const { email, iat } = decoded;
-    console.log(decoded)
 
     const user = await User.isUserExistsByEmail(email);
 

@@ -1,15 +1,15 @@
 import { z } from "zod";
 
-const loginValidationSchema = z.object({
-    body: z.object({
-        email: z.string({ required_error: 'Email is required' }),
-        password: z.string({ required_error: 'Password is required' }),
-    }),
-});
 const loginWithGoogleValidationSchema = z.object({
     body: z.object({
         tokenId: z.string({ required_error: 'Token is required' }),
        
+    }),
+});
+const loginValidationSchema = z.object({
+    body: z.object({
+        email: z.string({ required_error: 'Email is required' }),
+        password: z.string({ required_error: 'Password is required' }),
     }),
 });
 
@@ -33,24 +33,39 @@ const ChangePasswordValidationSchema = z.object({
     }),
 });
 
-
+const getAccessTokenByRefreshTokenValidationSchema = z.object({
+    cookies: z.object({
+        refreshToken: z.string({ required_error: 'refresh token is required' }),
+    }),
+});
 
 const forgetPasswordValidationSchema = z.object({
     body: z.object({
         email: z.string({ required_error: 'Email is required' }),
     }),
 });
-const refreshTokenValidationSchema = z.object({
+const verifyOTPValidationSchema = z.object({
+    body: z.object({
+        email: z.string({ required_error: 'Email is required' }),
+        OTP : z.string({required_error : 'OTP is required'})
+    }),
+});
+const resetPasswordValidationSchema = z.object({
     cookies: z.object({
-        refreshToken: z.string({ required_error: 'refresh token is required' }),
+        verifiedUser: z.string({ required_error: 'verification token is required' }),
+    }),
+    body: z.object({
+        newPassword: z.string({ required_error: 'Password is required' }),
     }),
 });
 
 export const UserValidation = {
     SignUpByEmailAndPasswordValidationSchema,
     loginValidationSchema,
-    refreshTokenValidationSchema,
+    getAccessTokenByRefreshTokenValidationSchema,
     forgetPasswordValidationSchema,
     ChangePasswordValidationSchema,
-    loginWithGoogleValidationSchema
+    loginWithGoogleValidationSchema,
+    verifyOTPValidationSchema,
+    resetPasswordValidationSchema
 };

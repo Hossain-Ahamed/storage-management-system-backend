@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import AppError from "../../errors/AppError";
 import { TLoginUser, TUser } from "./user.interface";
 import { User } from "./user.model";
@@ -11,10 +11,26 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { sendEmail } from "../../../utils/sendEmail";
 import { generateOTP } from "../../../utils/utility";
-import {  OAuth2Client } from "google-auth-library";
+import { OAuth2Client } from "google-auth-library";
+
+const UpdatePassword = async (userID: Types.ObjectId, newPassword: string) => {
+    const newHashedPassword = await bcrypt.hash(
+        newPassword,
+        Number(config.bcrypt_salt_round),
+    );
+    await User.findOneAndUpdate(
+        {
+            _id: userID,
+        },
+        {
+            password: newHashedPassword,
+            needsPasswordChange: false,
+            passwordChangedAt: new Date(),
+        },
+    );
+}
 
 const gClient = new OAuth2Client(config.GOOGLE_CLIENT_ID);
-
 const googleAuth = async (tokenId: string) => {
 
     if (!tokenId) {
@@ -326,26 +342,11 @@ const changePassword = async (
         throw new AppError(httpStatus.FORBIDDEN, 'old Password is not correct');
     }
 
-    //hash the new password
-
-    const newHashedPassword = await bcrypt.hash(
-        payload.newPassword,
-        Number(config.bcrypt_salt_round),
-    );
-    await User.findOneAndUpdate(
-        {
-            _id: user._id,
-        },
-        {
-            password: newHashedPassword,
-            needsPasswordChange: false,
-            passwordChangedAt: new Date(),
-        },
-    );
+    await UpdatePassword(user._id, payload.newPassword);
     return null;
 };
 
-const refreshToken = async (token: string) => {
+const getAccessToken = async (token: string) => {
 
     if (!token) {
         throw new AppError(httpStatus.UNAUTHORIZED, 'Unauthrized access');
@@ -417,12 +418,27 @@ const forgetPassword = async (email: string) => {
         );
     }
 
+    const currentTime = new Date();
+    const OTPExpiresAt = user.verificationInfo?.OTPExpiresAt;
+
+    if (OTPExpiresAt && currentTime < OTPExpiresAt) {
+        throw new AppError(
+            httpStatus.FORBIDDEN,
+            'OTP already generated recently',
+        );
+    }
+
     const OTP = generateOTP(6);
+
+    const newOTPExpiresAt = new Date();
+    newOTPExpiresAt.setMinutes(newOTPExpiresAt.getMinutes() + 5);
+
     const updatedUser = await User.updateOne(
         { email: user.email },
         {
             $set: {
                 'verificationInfo.OTP': OTP,
+                'verificationInfo.OTPExpiresAt': newOTPExpiresAt,
                 'verificationInfo.OTPUsed': false,
             },
         }
@@ -433,14 +449,14 @@ const forgetPassword = async (email: string) => {
     }
 
     //send otp to the email of the user
-    const OTPmail = `Your OTP for changing password is ${OTP}. Please change in 5 minutes`;
-    console.log(OTPmail)
+    const OTPmail = `Your OTP for changing password is ${OTP}. Please verify in 5 minutes`;
+
     await sendEmail(user.email, OTPmail);
 
-   
+    return null;
 };
 
-const verifyOTP = async (email: string, OTP :string) => {
+const verifyOTP = async (email: string, OTP: string) => {
 
     const user = await User.isUserExistsByEmail(email);
 
@@ -456,25 +472,83 @@ const verifyOTP = async (email: string, OTP :string) => {
             'User is already removed from system',
         );
     }
-    
+
+    if (!User.isOTPVerified(
+        OTP,
+        user?.verificationInfo?.OTP,
+        user?.verificationInfo?.OTPExpiresAt,
+        user?.verificationInfo?.OTPUsed,
+    )) {
+        throw new AppError(
+            httpStatus.FORBIDDEN,
+            'OTP verification failed',
+        );
+    }
 
     const jwtPayload = {
         email: user.email
     };
     const token = createVerifyUserToken(
         jwtPayload,
-        config.JWT_ACCESS_SECRET as string,
-        '5m',
+        config.JWT_VERIFIED_USER_SECRET as string,
+        '60m',
     );
     return {
-        token
+        token,
+
     }
 }
+
+const resetPassword = async (token: string, password: string) => {
+
+    if (!token) {
+        throw new AppError(httpStatus.UNAUTHORIZED, 'Unauthrized');
+    }
+
+    const decoded = jwt.verify(
+        token,
+        config.JWT_VERIFIED_USER_SECRET as string,
+    ) as JwtPayload;
+
+    const { email } = decoded;
+
+    const user = await User.isUserExistsByEmail(email);
+
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+    }
+
+    // checking if the user is already deleted
+    const isDeleted = user?.isDeleted;
+    if (isDeleted) {
+        throw new AppError(
+            httpStatus.FORBIDDEN,
+            'User is already removed from system',
+        );
+    }
+    await UpdatePassword(user._id, password);
+
+    const updateResult = await User.updateOne(
+        { _id: user._id },
+        {
+          $unset: { verificationInfo: 1 }, 
+        }
+      );
+    
+      if (!updateResult.matchedCount || !updateResult.modifiedCount) {
+        throw new AppError(httpStatus.BAD_REQUEST, 'Failed to remove verification information');
+      }
+    
+    return null;
+
+};
 export const UserServices = {
     SignUp,
     login,
     googleAuth,
     changePassword,
-    refreshToken,
+    getAccessToken,
     forgetPassword,
+    verifyOTP,
+    resetPassword
 }

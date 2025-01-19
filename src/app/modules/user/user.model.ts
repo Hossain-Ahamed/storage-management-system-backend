@@ -8,7 +8,10 @@ const UserVerificationInfoSchema = new Schema<TUserVerificationInfo>(
             type: String,
             required: true,
         },
-       
+        OTPExpiresAt: {
+            type: Date,
+            required: true,
+        },
         OTPUsed: {
             type: Boolean,
             default: false,
@@ -21,7 +24,7 @@ const UserVerificationInfoSchema = new Schema<TUserVerificationInfo>(
 
 const userSchema = new Schema<TUser>(
     {
-     
+
         userName: {
             type: String,
             required: true,
@@ -43,13 +46,13 @@ const userSchema = new Schema<TUser>(
             select: 0,
         },
         verificationInfo: UserVerificationInfoSchema,
-        rootFolderID : {
+        rootFolderID: {
             type: Schema.Types.ObjectId,
             ref: 'Folder',
 
         },
         limit: {
-            type: Number, 
+            type: Number,
             default: 15 * 1024 * 1024 * 1024,
         },
 
@@ -79,7 +82,7 @@ userSchema.pre('save', async function (next) {
         );
     }
 
- 
+
     next();
 });
 
@@ -100,13 +103,13 @@ userSchema.statics.isUserExistsByEmail = async function (email: string) {
 userSchema.statics.isOTPVerified = async function (
     OTP: string,
     SavedOTP: string,
-    OTPExpiresAt :number,
-    OTPUsed : boolean
+    OTPExpiresAt: Date,
+    OTPUsed: boolean
 ) {
-    if (new Date().getTime() / 1000 > OTPExpiresAt || OTPUsed) {
-        return false; 
+    if (new Date() > OTPExpiresAt || OTPUsed) {
+        return false;
     }
-    return  OTP===SavedOTP;
+    return OTP === SavedOTP;
 };
 
 userSchema.statics.isPasswordMatched = async function (
@@ -119,9 +122,9 @@ userSchema.statics.isPasswordMatched = async function (
 userSchema.statics.isJWTIssuedBeforePasswordChanged = function (
     passwordChangedAt: Date,
     JwtIssuedTimeStamp: number,
-  ) {
+) {
     const passwordChangedTime = new Date(passwordChangedAt).getTime() / 1000;
     return passwordChangedTime > JwtIssuedTimeStamp;
-  };
+};
 
 export const User = model<TUser, UserModel>('User', userSchema);

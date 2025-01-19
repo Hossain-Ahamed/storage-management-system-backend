@@ -27,7 +27,24 @@ router.post(
 );
 router.get(
     '/refresh-token',
-    validateRequest(UserValidation.refreshTokenValidationSchema),
-    UserControllers.refreshToken,
+    validateRequest(UserValidation.getAccessTokenByRefreshTokenValidationSchema),
+    UserControllers.getAccessToken,
 );
+router.post(
+    '/forget-password',
+    validateRequest(UserValidation.forgetPasswordValidationSchema),
+    UserControllers.forgetPassword,
+);
+
+router.post(
+    '/verify-OTP',
+    validateRequest(UserValidation.verifyOTPValidationSchema),
+    UserControllers.verifyOTP,
+);
+router.post(
+    '/reset-password',
+    validateRequest(UserValidation.resetPasswordValidationSchema),
+    UserControllers.resetPassword,
+);
+
 export const UserRouter = router;
