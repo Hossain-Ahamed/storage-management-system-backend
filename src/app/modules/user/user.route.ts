@@ -15,6 +15,11 @@ router.post(
     UserControllers.LoginUserByEmailandPassword
 );
 router.post(
+    '/log-in-with-google',
+    validateRequest(UserValidation.loginWithGoogleValidationSchema),
+    UserControllers.LoginwithGoogle
+);
+router.post(
     '/change-password',
     auth(),
     validateRequest(UserValidation.ChangePasswordValidationSchema),

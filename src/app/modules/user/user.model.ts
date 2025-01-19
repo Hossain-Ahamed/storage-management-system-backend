@@ -21,12 +21,7 @@ const UserVerificationInfoSchema = new Schema<TUserVerificationInfo>(
 
 const userSchema = new Schema<TUser>(
     {
-      
-        googleID: {
-
-            type: String,
-            unique: true,
-        },
+     
         userName: {
             type: String,
             required: true,

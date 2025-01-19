@@ -9,7 +9,6 @@ export interface TUserVerificationInfo {
 export interface TUser {
     _id : Types.ObjectId;
     userName: string;
-    googleID?: string;
     email: string;
     password?: string;
     passwordChangedAt?: Date;

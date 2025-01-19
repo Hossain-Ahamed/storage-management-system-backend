@@ -23,7 +23,24 @@ const signUpUserByEmailandPassword: RequestHandler = catchAsync(async (req, res)
     });
 })
 const LoginUserByEmailandPassword: RequestHandler = catchAsync(async (req, res) => {
-    const { user,accessToken,refreshToken } = await UserServices.login(req.body);
+    const { user, accessToken, refreshToken } = await UserServices.login(req.body);
+
+    res.cookie('refreshToken', refreshToken, {
+        secure: config.NODE_ENV === 'production',
+        httpOnly: true,
+        sameSite: 'none',
+        maxAge: 1000 * 60 * 60 * 24 * 365,
+    });
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'User Logged in successfully',
+        data: { accessToken, user },
+    });
+})
+const LoginwithGoogle: RequestHandler = catchAsync(async (req, res) => {
+    const { user, accessToken, refreshToken } = await UserServices.googleAuth(req.body?.tokenId);
 
     res.cookie('refreshToken', refreshToken, {
         secure: config.NODE_ENV === 'production',
@@ -43,30 +60,44 @@ const changePassword = catchAsync(async (req, res) => {
     const { ...passwordData } = req.body;
 
     const result = await UserServices.changePassword(req.user, passwordData);
-  
+
     sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: 'Password is udpated in successfully',
-      data: result,
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Password is udpated in successfully',
+        data: result,
     });
-  });
-  const refreshToken = catchAsync(async (req, res) => {
+});
+const refreshToken = catchAsync(async (req, res) => {
     const { refreshToken } = req.cookies;
-  
+
     const result = await UserServices.refreshToken(refreshToken);
-  
+
     sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: 'Access token retrieved successfully',
-      data: result,
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Access token retrieved successfully',
+        data: result,
     });
-  });
-  
+});
+
+
+const forgetPassword = catchAsync(async (req, res) => {
+    const email = req.body?.email;
+    const result = await UserServices.forgetPassword(email);
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Reset link is generated  successfully',
+        data: "",
+    });
+});
+
 export const UserControllers = {
     signUpUserByEmailandPassword,
     LoginUserByEmailandPassword,
+    LoginwithGoogle,
     changePassword,
     refreshToken
 };

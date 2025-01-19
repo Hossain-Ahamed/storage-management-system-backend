@@ -6,6 +6,12 @@ const loginValidationSchema = z.object({
         password: z.string({ required_error: 'Password is required' }),
     }),
 });
+const loginWithGoogleValidationSchema = z.object({
+    body: z.object({
+        tokenId: z.string({ required_error: 'Token is required' }),
+       
+    }),
+});
 
 const SignUpByEmailAndPasswordValidationSchema = z.object({
     body: z.object({
@@ -46,4 +52,5 @@ export const UserValidation = {
     refreshTokenValidationSchema,
     forgetPasswordValidationSchema,
     ChangePasswordValidationSchema,
+    loginWithGoogleValidationSchema
 };
