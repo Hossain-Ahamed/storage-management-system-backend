@@ -6,7 +6,9 @@ import httpStatus from 'http-status';
 import { FolderModel } from "../StorageSytem/storageSystem.model";
 import config from "../../config";
 import { createToken } from "./user.utils";
-
+import { JwtPayload } from "jsonwebtoken";
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 const SignUp = async (payload: TUser) => {
     const isUserExist = await User.isUserExistsByEmail(payload.email);
     if (isUserExist) {
@@ -154,8 +156,106 @@ const login = async (payload: TLoginUser) => {
   
   };
   
+  const changePassword = async (
+    userData: JwtPayload,
+    payload: { oldPassword: string; newPassword: string },
+  ) => {
+    // check if the userExist
+    const user = await User.isUserExistsByEmail(userData.email);
+    if (!user) {
+      throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+    }
+    // checking if the user is already deleted
+    const isDeleted = user?.isDeleted;
+    if (isDeleted) {
+      throw new AppError(
+        httpStatus.FORBIDDEN,
+        'User is already removed from system',
+      );
+    }
+  
+    //checking if the old password is correcttly matched with db password
+    if (user.password && !(await User.isPasswordMatched(payload.oldPassword, user?.password))) {
+      throw new AppError(httpStatus.FORBIDDEN, 'old Password is not correct');
+    }
+  
+    //hash the new password
+  
+    const newHashedPassword = await bcrypt.hash(
+      payload.newPassword,
+      Number(config.bcrypt_salt_round),
+    );
+    await User.findOneAndUpdate(
+      {
+        _id: user._id,   
+      },
+      {
+        password: newHashedPassword,
+        needsPasswordChange: false,
+        passwordChangedAt: new Date(),
+      },
+    );
+    return null;
+  };
 
+  const refreshToken = async (token: string) => {
+
+    if (!token) {
+      throw new AppError(httpStatus.UNAUTHORIZED, 'Unauthrized access');
+    }
+  
+    const decoded = jwt.verify(
+      token,
+      config.JWT_REFRESH_SECRET as string,
+    ) as JwtPayload;
+  
+    const { email, iat } = decoded;
+  
+    const user = await User.isUserExistsByEmail(email);
+  
+    if (!user) {
+      throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+    }
+  
+    // checking if the user is already deleted
+    const isDeleted = user?.isDeleted;
+    if (isDeleted) {
+      throw new AppError(
+        httpStatus.FORBIDDEN,
+        'User is already removed from system',
+      );
+    }
+  
+
+    //check if the token is generated before the  password has changed
+    if (
+      user?.passwordChangedAt &&
+      User.isJWTIssuedBeforePasswordChanged(user.passwordChangedAt, iat as number)
+    ) {
+      throw new AppError(
+        httpStatus.FORBIDDEN,
+        'You are not authorized. Log in Again',
+      );
+    }
+  
+   
+    const jwtPayload = {
+        email: user.email,
+        rootFolder: user.rootFolderID
+    };
+    const accessToken = createToken(
+        jwtPayload,
+        config.JWT_ACCESS_SECRET as string,
+        config.JWT_ACCESS_EXPIRES_IN as string,
+    );
+  
+    return {
+      accessToken,
+    };
+  };
 export const UserServices = {
     SignUp,
-    login
+    login,
+    changePassword,
+    refreshToken
 }

@@ -39,8 +39,34 @@ const LoginUserByEmailandPassword: RequestHandler = catchAsync(async (req, res) 
         data: { accessToken, user },
     });
 })
+const changePassword = catchAsync(async (req, res) => {
+    const { ...passwordData } = req.body;
 
+    const result = await UserServices.changePassword(req.user, passwordData);
+  
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Password is udpated in successfully',
+      data: result,
+    });
+  });
+  const refreshToken = catchAsync(async (req, res) => {
+    const { refreshToken } = req.cookies;
+  
+    const result = await UserServices.refreshToken(refreshToken);
+  
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Access token retrieved successfully',
+      data: result,
+    });
+  });
+  
 export const UserControllers = {
     signUpUserByEmailandPassword,
-    LoginUserByEmailandPassword
+    LoginUserByEmailandPassword,
+    changePassword,
+    refreshToken
 };

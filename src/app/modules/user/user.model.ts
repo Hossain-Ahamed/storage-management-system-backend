@@ -8,10 +8,7 @@ const UserVerificationInfoSchema = new Schema<TUserVerificationInfo>(
             type: String,
             required: true,
         },
-        OTPExpiresAt: {
-            type: Date,
-            required: true,
-        },
+       
         OTPUsed: {
             type: Boolean,
             default: false,
@@ -26,6 +23,7 @@ const userSchema = new Schema<TUser>(
     {
       
         googleID: {
+
             type: String,
             unique: true,
         },
@@ -107,10 +105,10 @@ userSchema.statics.isUserExistsByEmail = async function (email: string) {
 userSchema.statics.isOTPVerified = async function (
     OTP: string,
     SavedOTP: string,
-    OTPExpiresAt :Date,
+    OTPExpiresAt :number,
     OTPUsed : boolean
 ) {
-    if (new Date() > OTPExpiresAt || OTPUsed) {
+    if (new Date().getTime() / 1000 > OTPExpiresAt || OTPUsed) {
         return false; 
     }
     return  OTP===SavedOTP;

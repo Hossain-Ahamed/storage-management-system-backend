@@ -25,7 +25,7 @@ export type TLoginUser = {
   };
 export interface UserModel extends Model<TUser> {
     isUserExistsByEmail(email: string): Promise<TUser>;
-    isOTPVerified(OTP: string, SavedOTP: string,OTPExpiresAt :Date, OTPUsed : boolean) : Promise<boolean>;
+    isOTPVerified(OTP: string, SavedOTP: string,OTPExpiresAt :number, OTPUsed : boolean) : Promise<boolean>;
     isPasswordMatched(plainTextPassword: string, hashPassword: string): Promise<boolean>;
     isJWTIssuedBeforePasswordChanged(passordChangeTimeStamp: Date, JwtIssuedTimeStamp: number): boolean;
 }
