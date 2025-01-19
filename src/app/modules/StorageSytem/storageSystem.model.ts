@@ -18,12 +18,10 @@ const FolderSchema = new Schema<TFolder>(
                 ref: 'User',
             },
         ],
-        childFolder: [
-            {
-                type: Schema.Types.ObjectId,
-                ref: 'Folder',
-            },
-        ],
+        parent: {
+            type: Schema.Types.ObjectId,
+            ref: 'Folder',
+        },
         isFavorite: {
             type: Boolean,
             default: false,
@@ -91,9 +89,9 @@ const FileSchema = new Schema<TFile>(
             type: String,
             enum: ['PDF', 'Image', 'Document'],
         },
-        fileSize : {
-            type : Number,
-            required : true
+        fileSize: {
+            type: Number,
+            required: true
         },
 
         isFavorite: {

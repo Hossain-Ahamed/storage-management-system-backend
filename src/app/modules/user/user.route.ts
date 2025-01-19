@@ -8,4 +8,9 @@ router.post(
     validateRequest(UserValidation.SignUpByEmailAndPasswordValidationSchema),
     UserControllers.signUpUserByEmailandPassword
 );
+router.post(
+    '/log-in',
+    validateRequest(UserValidation.loginValidationSchema),
+    UserControllers.LoginUserByEmailandPassword
+);
 export const UserRouter = router;

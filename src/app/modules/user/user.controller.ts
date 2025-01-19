@@ -22,7 +22,25 @@ const signUpUserByEmailandPassword: RequestHandler = catchAsync(async (req, res)
         data: { accessToken, user },
     });
 })
+const LoginUserByEmailandPassword: RequestHandler = catchAsync(async (req, res) => {
+    const { user,accessToken,refreshToken } = await UserServices.login(req.body);
+
+    res.cookie('refreshToken', refreshToken, {
+        secure: config.NODE_ENV === 'production',
+        httpOnly: true,
+        sameSite: 'none',
+        maxAge: 1000 * 60 * 60 * 24 * 365,
+    });
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'User Logged in successfully',
+        data: { accessToken, user },
+    });
+})
 
 export const UserControllers = {
     signUpUserByEmailandPassword,
+    LoginUserByEmailandPassword
 };

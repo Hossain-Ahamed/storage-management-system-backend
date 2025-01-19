@@ -5,7 +5,7 @@ export type TFolder = {
     userID:Types.ObjectId;
     folderName : string;
     access : Types.ObjectId[];
-    childFolder : Types.ObjectId[];
+    parent : Types.ObjectId;
     isFavorite: boolean;
     isSecured: boolean;
     isDeleted: boolean;

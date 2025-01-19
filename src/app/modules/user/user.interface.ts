@@ -7,6 +7,7 @@ export interface TUserVerificationInfo {
     OTPUsed: boolean;
 }
 export interface TUser {
+    _id : Types.ObjectId;
     userName: string;
     googleID?: string;
     email: string;
@@ -18,7 +19,10 @@ export interface TUser {
     verificationInfo : TUserVerificationInfo
     isDeleted: boolean;
 }
-
+export type TLoginUser = {
+    email: string;
+    password: string;
+  };
 export interface UserModel extends Model<TUser> {
     isUserExistsByEmail(email: string): Promise<TUser>;
     isOTPVerified(OTP: string, SavedOTP: string,OTPExpiresAt :Date, OTPUsed : boolean) : Promise<boolean>;
