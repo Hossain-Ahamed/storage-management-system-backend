@@ -55,6 +55,10 @@ const userSchema = new Schema<TUser>(
             ref: 'Folder',
 
         },
+        limit: {
+            type: Number, 
+            default: 15 * 1024 * 1024 * 1024,
+        },
 
     },
     {

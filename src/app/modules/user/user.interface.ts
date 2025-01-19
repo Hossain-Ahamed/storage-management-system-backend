@@ -14,6 +14,7 @@ export interface TUser {
     passwordChangedAt?: Date;
     secureFolderPin?: string;
     rootFolderID : Types.ObjectId;
+    limit : number;
     verificationInfo : TUserVerificationInfo
     isDeleted: boolean;
 }

@@ -91,6 +91,10 @@ const FileSchema = new Schema<TFile>(
             type: String,
             enum: ['PDF', 'Image', 'Document'],
         },
+        fileSize : {
+            type : Number,
+            required : true
+        },
 
         isFavorite: {
             type: Boolean,

@@ -9,26 +9,17 @@ let server: Server;
 async function main() {
   try {
     await mongoose.connect(config.database_URL as string);
-<<<<<<< HEAD
-=======
-
->>>>>>> 2e5d2b06e69d012a04b7fc55ea3a607012bd2581
     server = app.listen(config.PORT, () => {
       console.log(`App listening on port ${config.PORT}`);
     });
   } catch (error) {
     console.log(error);
-<<<<<<< HEAD
     process.exit(1);
-=======
-    process.exit(1)
->>>>>>> 2e5d2b06e69d012a04b7fc55ea3a607012bd2581
   }
 }
 
 main();
 
-// 14-6
 
 //for asynchronus
 process.on('unhandledRejection', () => {

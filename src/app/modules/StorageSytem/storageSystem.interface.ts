@@ -16,6 +16,7 @@ export type TFile = {
     uniqueFileName : string;
     path : string;
     dataType : TFileTypes,
+    fileSize : number,
     isFavorite: boolean;
     isSecured: boolean;
     isDeleted: boolean;

@@ -7,7 +7,7 @@ const loginValidationSchema = z.object({
     }),
 });
 
-const CreateUserByEmailAndPasswordValidationSchema = z.object({
+const SignUpByEmailAndPasswordValidationSchema = z.object({
     body: z.object({
         userName: z.string({ required_error: "Name is required" }),
         email: z.string().email("Invalid email address"),
@@ -41,7 +41,7 @@ const refreshTokenValidationSchema = z.object({
 });
 
 export const UserValidation = {
-    CreateUserByEmailAndPasswordValidationSchema,
+    SignUpByEmailAndPasswordValidationSchema,
     loginValidationSchema,
     refreshTokenValidationSchema,
     forgetPasswordValidationSchema,
