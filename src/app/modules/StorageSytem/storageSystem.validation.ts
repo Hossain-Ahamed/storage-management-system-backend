@@ -12,8 +12,23 @@ const shareFolderValidationSchema = z.object({
         email: z.string({ required_error: 'Email is required' }),
     }),
 });
+const duplicateFolderValidationSchema = z.object({
+    body: z.object({
+        folderID: z.string({ required_error: 'Folder ID is required' }),
+    }),
+});
+const updateFolderValidationSchema = z.object({
+    body: z.object({
+        folderName: z.string({ required_error: 'Folder ID is required' }).optional(),
+        isFavorite : z.boolean().optional(),
+    }),
+});
+
+
 
 export const StorageValidationSchema = {
     createFolderValidationSchema,
-    shareFolderValidationSchema
+    shareFolderValidationSchema,
+    duplicateFolderValidationSchema,
+    updateFolderValidationSchema
 }

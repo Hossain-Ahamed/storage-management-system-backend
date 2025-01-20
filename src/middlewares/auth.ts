@@ -124,11 +124,13 @@ export const isAllowed = () => {
     const { decoded, user } = await authenticateUser(req);
 
     /**
-     * for the folder which needs parentFolder,
-     *         who needs parent Folder they will use 'parentFolderID'
-     *         who doesn't need they will use 'folderID'
+     * parentFolder source : 
+     *         1. who needs parent Folder they will use 'parentFolderID'
+     *         2. who doesn't need they will use 'folderID'
+     *         3. or req.query.folderID
+     *        
      */
-    const parentFolderID = req.body?.parentFolderID || req.body?.folderID;
+    const parentFolderID = req.body?.parentFolderID || req.body?.folderID || req.query?.folderID;
     if (!parentFolderID) {
       throw new AppError(httpStatus.BAD_REQUEST, 'Parent folder ID is required');
     }

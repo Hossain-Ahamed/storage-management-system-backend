@@ -134,7 +134,7 @@ FileSchema.pre('save', async function (next) {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const file = this;
 
-    // Ensure the userID is included in the access array
+   
     if (file.userID && !file.access.includes(file.userID)) {
         file.access.push(file.userID);
     }

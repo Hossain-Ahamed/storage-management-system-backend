@@ -2,6 +2,7 @@ import { Types } from "mongoose"
 
 export type TFileTypes = "PDF" | "Image" | "Document"
 export type TFolder = {
+    _id : Types.ObjectId;
     userID:Types.ObjectId;
     folderName : string;
     access : Types.ObjectId[];
@@ -12,6 +13,7 @@ export type TFolder = {
 }
 
 export type TFile = {
+    _id : Types.ObjectId;
     name : string;
     uniqueFileName : string;
     path : string;
