@@ -23,7 +23,7 @@ export type TFile = {
     isSecured: boolean;
     isDeleted: boolean;
     userID:Types.ObjectId;
-    FolderID:Types.ObjectId;
+    folderID:Types.ObjectId;
     access : Types.ObjectId[];
 }
 

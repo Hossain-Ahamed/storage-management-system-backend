@@ -69,10 +69,29 @@ const deleteFolder: RequestHandler = catchAsync(async (req, res) => {
     });
 });
 
+/**
+ * ----------------------- File Management --------------------------
+ */
+
+const createFile : RequestHandler = catchAsync(async (req, res) => {
+    const folderInfo = req.folderInfo;
+    const {email} = req.user;
+    const result = await StorageServices.createFile(req.file,folderInfo,email);
+  
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'New file uploaded successfully',
+      data: result,
+    });
+  });
+  
+
 export const StorageControllers = {
     createFolder,
     shareFolder,
     duplicateFolder,
     updateFolder,
-    deleteFolder
+    deleteFolder,
+    createFile
 };

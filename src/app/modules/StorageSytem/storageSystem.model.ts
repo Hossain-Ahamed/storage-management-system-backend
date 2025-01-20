@@ -110,7 +110,7 @@ const FileSchema = new Schema<TFile>(
             type: Schema.Types.ObjectId,
             ref: 'User',
         },
-        FolderID: {
+        folderID: {
             type: Schema.Types.ObjectId,
             ref: 'User',
         },

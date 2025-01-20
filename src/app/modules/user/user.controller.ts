@@ -204,6 +204,19 @@ const logOut = catchAsync(async (req, res) => {
     });
 });
 
+// change name
+const changeName = catchAsync(async (req, res) => {
+    const userName = req.body?.userName;
+
+    const result = await UserServices.changeNameIntoDB(req.user, userName);
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Name is udpated in successfully',
+        data: result,
+    });
+});
 export const UserControllers = {
     signUpUserByEmailandPassword,
     LoginUserByEmailandPassword,
@@ -214,6 +227,7 @@ export const UserControllers = {
     forgetPassword,
     verifyOTP,
     resetPassword,
+    changeName,
     createPinForSecureFolder,
     LoginToSecureFolder,
     logOutFromSecureFolder

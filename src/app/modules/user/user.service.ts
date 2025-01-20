@@ -623,7 +623,7 @@ const createPinForSecureFolder = async (userData: JwtPayload, PIN: string) => {
 
 }
 
-const LoginToSecureFolder = async (userData: JwtPayload, PIN: string)  => {
+const LoginToSecureFolder = async (userData: JwtPayload, PIN: string) => {
 
     // check if the userExist
     const user = await User.isUserExistsByEmail(userData.email);
@@ -668,6 +668,22 @@ const LoginToSecureFolder = async (userData: JwtPayload, PIN: string)  => {
 
 
 };
+
+const changeNameIntoDB = async (userData : JwtPayload, name: string) => {
+
+    const user = await User.findOneAndUpdate(
+        {
+            email: userData.email,
+        },
+        {
+            userName: name,
+        },
+        {
+            new: true
+        }
+    );
+    return user;
+}
 export const UserServices = {
     SignUp,
     login,
@@ -677,7 +693,7 @@ export const UserServices = {
     forgetPassword,
     verifyOTP,
     resetPassword,
-
+    changeNameIntoDB,
     createPinForSecureFolder,
     LoginToSecureFolder,
 }

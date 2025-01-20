@@ -72,5 +72,11 @@ router.get(
     auth(),
     UserControllers.logOutFromSecureFolder,
 );
+router.patch(
+    '/change-name',
+    auth(),
+    validateRequest(UserValidation.ChangeNameValidationSchema),
+    UserControllers.changeName,
+);
 
 export const UserRouter = router;

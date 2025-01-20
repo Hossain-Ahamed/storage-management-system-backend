@@ -33,6 +33,12 @@ const ChangePasswordValidationSchema = z.object({
     }),
 });
 
+const ChangeNameValidationSchema = z.object({
+    body: z.object({
+        userName: z.string({ required_error: 'Name is required' }),
+        
+    }),
+});
 const getAccessTokenByRefreshTokenValidationSchema = z.object({
     cookies: z.object({
         refreshToken: z.string({ required_error: 'refresh token is required' }),
@@ -73,6 +79,6 @@ export const UserValidation = {
     loginWithGoogleValidationSchema,
     verifyOTPValidationSchema,
     resetPasswordValidationSchema,
-
-    PinValidationSchema
+    PinValidationSchema,
+    ChangeNameValidationSchema,
 };
