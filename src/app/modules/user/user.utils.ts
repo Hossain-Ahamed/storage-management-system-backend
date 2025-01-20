@@ -7,6 +7,14 @@ export const createToken = (
 ) => {
   return jwt.sign(jwtPayload, secret, { expiresIn: expiresIn });
 };
+export const createSecuredFolderToken = (
+  jwtPayload: { email: string,securedrootFolderID:Types.ObjectId },
+  secret: string,
+  expiresIn: string,
+) => {
+  return jwt.sign(jwtPayload, secret, { expiresIn: expiresIn });
+};
+
 export const createVerifyUserToken = (
   jwtPayload: { email: string},
   secret: string,

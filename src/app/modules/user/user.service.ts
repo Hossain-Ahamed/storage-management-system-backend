@@ -5,7 +5,7 @@ import { User } from "./user.model";
 import httpStatus from 'http-status';
 import { FolderModel } from "../StorageSytem/storageSystem.model";
 import config from "../../config";
-import { createToken, createVerifyUserToken } from "./user.utils";
+import { createSecuredFolderToken, createToken, createVerifyUserToken } from "./user.utils";
 import { JwtPayload } from "jsonwebtoken";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -622,6 +622,52 @@ const createPinForSecureFolder = async (userData: JwtPayload, PIN: string) => {
     }
 
 }
+
+const LoginToSecureFolder = async (userData: JwtPayload, PIN: string)  => {
+
+    // check if the userExist
+    const user = await User.isUserExistsByEmail(userData.email);
+
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+    }
+
+    // checking if the user is already deleted
+    const isDeleted = user.isDeleted;
+    if (isDeleted) {
+        throw new AppError(
+            httpStatus.FORBIDDEN,
+            'User is already removed from system',
+        );
+    }
+console.log(user)
+    if (!user.secureFolderPin || !user.securedrootFolderID) {
+        throw new AppError(httpStatus.BAD_REQUEST, 'Pin and secure folder are not created')
+    }
+
+    //checking if the password is correct
+    if (user?.password && !(await User.isPasswordMatched(PIN, user.secureFolderPin))) {
+        throw new AppError(httpStatus.FORBIDDEN, 'Password is not correct');
+    }
+
+
+    const jwtPayload = {
+        email: user.email,
+        securedrootFolderID: user.securedrootFolderID
+    };
+
+    const accessToken = createSecuredFolderToken(
+        jwtPayload,
+        config.JWT_ACCESS_SECRET as string,
+        config.JWT_ACCESS_EXPIRES_IN as string,
+    );
+    return {
+        securedrootFolderID: user.securedrootFolderID,
+        accessToken,
+    };
+
+
+};
 export const UserServices = {
     SignUp,
     login,
@@ -633,4 +679,5 @@ export const UserServices = {
     resetPassword,
 
     createPinForSecureFolder,
+    LoginToSecureFolder,
 }

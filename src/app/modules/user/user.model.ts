@@ -76,7 +76,7 @@ userSchema.pre('save', async function (next) {
             Number(config.bcrypt_salt_round)
         );
     }
-console.log(user.secureFolderPin)
+
     // Hash secureFolderPin 
     if (user.secureFolderPin) {
         user.secureFolderPin = await bcrypt.hash(
@@ -100,7 +100,7 @@ userSchema.post('save', function (doc, next) {
 });
 
 userSchema.statics.isUserExistsByEmail = async function (email: string) {
-    return await User.findOne({ email }).select('+password');
+    return await User.findOne({ email }).select('+password +secureFolderPin');
 };
 
 userSchema.statics.isOTPVerified = async function (

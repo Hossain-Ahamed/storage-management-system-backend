@@ -14,6 +14,12 @@ router.post(
     validateRequest(UserValidation.loginValidationSchema),
     UserControllers.LoginUserByEmailandPassword
 );
+
+router.get(
+    '/log-out',
+    auth(),
+    UserControllers.logOut,
+);
 router.post(
     '/log-in-with-google',
     validateRequest(UserValidation.loginWithGoogleValidationSchema),
@@ -53,6 +59,18 @@ router.post(
     auth(),
     validateRequest(UserValidation.PinValidationSchema),
     UserControllers.createPinForSecureFolder,
+);
+router.post(
+    '/log-in-to-secure-folder',
+    auth(),
+    validateRequest(UserValidation.PinValidationSchema),
+    UserControllers.LoginToSecureFolder,
+);
+
+router.get(
+    '/log-out-from-secure-folder',
+    auth(),
+    UserControllers.logOutFromSecureFolder,
 );
 
 export const UserRouter = router;

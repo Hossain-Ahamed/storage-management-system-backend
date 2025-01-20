@@ -145,14 +145,76 @@ const createPinForSecureFolder = catchAsync(async (req, res) => {
     });
 });
 
+const LoginToSecureFolder = catchAsync(async (req, res) => {
+    const PIN = req.body?.PIN;
+
+    const {securedrootFolderID,accessToken} = await UserServices.LoginToSecureFolder(req.user, PIN);
+
+    
+    res.cookie('secureFolderToken', accessToken, {
+        secure: config.NODE_ENV === 'production',
+        httpOnly: true,
+        sameSite: 'none',
+        maxAge: 1000 * 60 * 60 * 24 * 10,
+    });
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Secured Folder Login successfully and cookie updated',
+        data: {
+            securedrootFolderID
+        },
+    });
+});
+
+const logOutFromSecureFolder = catchAsync(async (req, res) => {
+  
+
+    res.clearCookie('secureFolderToken', {
+        httpOnly: true,
+        secure: config.NODE_ENV === 'production',
+    });
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Logout from secure folder Successfully',
+        data: '',
+    });
+});
+const logOut = catchAsync(async (req, res) => {
+  
+
+    res.clearCookie('secureFolderToken', {
+        httpOnly: true,
+        secure: config.NODE_ENV === 'production',
+    });
+
+    res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: config.NODE_ENV === 'production',
+    });
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Logout folder Successfully',
+        data: '',
+    });
+});
+
 export const UserControllers = {
     signUpUserByEmailandPassword,
     LoginUserByEmailandPassword,
     LoginwithGoogle,
+    logOut,
     changePassword,
     getAccessToken,
     forgetPassword,
     verifyOTP,
     resetPassword,
-    createPinForSecureFolder
+    createPinForSecureFolder,
+    LoginToSecureFolder,
+    logOutFromSecureFolder
 };
