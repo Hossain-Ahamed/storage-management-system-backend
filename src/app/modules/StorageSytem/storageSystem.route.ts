@@ -11,4 +11,10 @@ router.post(
     isAllowed(),
     StorageControllers.createFolder,
   );
+router.post(
+    '/share-folder',
+    validateRequest(StorageValidationSchema.shareFolderValidationSchema),
+    // isAllowed(),
+    StorageControllers.shareFolder,
+  );
 export const StorageSystemRouter = router;

@@ -123,13 +123,18 @@ export const isAllowed = () => {
 
     const { decoded, user } = await authenticateUser(req);
 
-    const { parentFolder } = req.body;
-    if (!parentFolder) {
+    /**
+     * for the folder which needs parentFolder,
+     *         who needs parent Folder they will use 'parentFolderID'
+     *         who doesn't need they will use 'folderID'
+     */
+    const parentFolderID = req.body?.parentFolderID || req.body?.folderID;
+    if (!parentFolderID) {
       throw new AppError(httpStatus.BAD_REQUEST, 'Parent folder ID is required');
     }
 
     const parentFolderData = await FolderModel.findOne({
-      _id: parentFolder,
+      _id: parentFolderID,
       $or: [
         { userID: user._id }, //own folder
         { access: { $in: [user._id] } }, // get access by owner
@@ -155,6 +160,7 @@ export const isAllowed = () => {
     }
 
     const folderInfo: TFolderInfo = {
+      userID : parentFolderData.userID,
       parentFolderID: parentFolderData._id,
       allowedUser: parentFolderData.access,
       isSecured: parentFolderData.isSecured

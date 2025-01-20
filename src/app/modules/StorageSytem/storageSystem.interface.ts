@@ -26,6 +26,7 @@ export type TFile = {
 }
 
 export type TFolderInfo = {
+    userID : Types.ObjectId; 
     parentFolderID : Types.ObjectId;
     allowedUser : Types.ObjectId[];
     isSecured : boolean;
