@@ -78,5 +78,11 @@ router.patch(
     validateRequest(UserValidation.ChangeNameValidationSchema),
     UserControllers.changeName,
 );
+router.get(
+    '/get-my-profile',
+    auth(),
+    UserControllers.getMyProfile,
+);
+
 
 export const UserRouter = router;

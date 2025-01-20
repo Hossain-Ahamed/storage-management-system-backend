@@ -3,7 +3,7 @@ import AppError from "../../errors/AppError";
 import { TLoginUser, TUser } from "./user.interface";
 import { User } from "./user.model";
 import httpStatus from 'http-status';
-import { FolderModel } from "../StorageSytem/storageSystem.model";
+import { FileModel, FolderModel } from "../StorageSytem/storageSystem.model";
 import config from "../../config";
 import { createSecuredFolderToken, createToken, createVerifyUserToken } from "./user.utils";
 import { JwtPayload } from "jsonwebtoken";
@@ -669,7 +669,7 @@ const LoginToSecureFolder = async (userData: JwtPayload, PIN: string) => {
 
 };
 
-const changeNameIntoDB = async (userData : JwtPayload, name: string) => {
+const changeNameIntoDB = async (userData: JwtPayload, name: string) => {
 
     const user = await User.findOneAndUpdate(
         {
@@ -684,6 +684,50 @@ const changeNameIntoDB = async (userData : JwtPayload, name: string) => {
     );
     return user;
 }
+const getMyProfile = async (email: string) => {
+
+    const user = await User.findOne({ email })
+
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+    }
+
+
+    const sizesByType = await FileModel.aggregate([
+        { $match: { userID: user._id } },
+        {
+            $group: {
+                _id: '$dataType',
+                totalSize: { $sum: '$fileSize' },
+            },
+        },
+    ]);
+
+    let totalUsedFromLimit = 0
+    const storageUsageByType = sizesByType.reduce((acc, { _id, totalSize }) => {
+        acc[_id] = totalSize;
+        totalUsedFromLimit += totalSize
+        return acc;
+    }, {} as Record<string, number>);
+
+    const remainingStorage = user.limit - totalUsedFromLimit;
+
+    const recentFolders = await FolderModel.find({userID : user._id,isSecured:false}).sort({ updatedAt: -1 }).limit(8); 
+    const recentFiles = await FileModel.find({userID : user._id,isSecured:false}).sort({ updatedAt: -1 }).limit(8);
+    const combinedResults = [...recentFolders, ...recentFiles] ;
+    const sortedResults = combinedResults.sort((a, b) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(); 
+    });
+    const recent = sortedResults.slice(0, 8);
+    return {
+        user,
+        storageUsageByType,
+        remainingStorage,
+        recent
+    };
+};
 export const UserServices = {
     SignUp,
     login,
@@ -696,4 +740,5 @@ export const UserServices = {
     changeNameIntoDB,
     createPinForSecureFolder,
     LoginToSecureFolder,
+    getMyProfile
 }

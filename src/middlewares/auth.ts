@@ -169,9 +169,6 @@ export const isAllowed = (typeOfData: 'file' | 'folder') => {
         allowedUser: parentFolderData.access,
         isSecured: parentFolderData.isSecured
       }
-
-
-
       req.user = decoded;
       req.info = folderInfo;
     }

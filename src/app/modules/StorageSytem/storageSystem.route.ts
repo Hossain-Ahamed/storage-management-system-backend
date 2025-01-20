@@ -1,9 +1,10 @@
 import express from 'express';
 import { validateRequest } from '../../../middlewares/validateRequest';
 import { StorageValidationSchema } from './storageSystem.validation';
-import { isAllowed } from '../../../middlewares/auth';
+import { auth, isAllowed } from '../../../middlewares/auth';
 import { StorageControllers } from './storageSystem.controller';
 import { upload } from '../../../middlewares/uploadFiles';
+
 const router = express.Router();
 
 router.post(
@@ -67,4 +68,6 @@ router.delete(
     isAllowed('file'),
     StorageControllers.deleteFile,
 );
+
+router.get('/get-data',auth(),StorageControllers.getData)
 export const StorageSystemRouter = router;

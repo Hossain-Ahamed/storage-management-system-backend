@@ -6,10 +6,10 @@ import httpStatus from 'http-status';
 import AppError from "../../errors/AppError";
 
 const createFolder: RequestHandler = catchAsync(async (req, res) => {
-    const { isSecured, parentFolderID, userID } = req.info;
+    const { isSecured, parentFolderID, userID,allowedUser } = req.info;
     const folderName = req.body?.folderName;
     const { email } = req.user
-    const result = await StorageServices.createFolder(folderName, isSecured, parentFolderID, userID, email);
+    const result = await StorageServices.createFolder(folderName, isSecured, parentFolderID, userID, email,allowedUser);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
@@ -139,6 +139,19 @@ const deleteFile: RequestHandler = catchAsync(async (req, res) => {
         data: result,
     });
 });
+
+
+const getData = catchAsync(async (req, res) => {
+    const {email} = req.user;
+    const result = await StorageServices.getData(req.query,email,req.cookies);
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: 'Data retreived successfully',
+    
+      data: result,
+    });
+  });
 export const StorageControllers = {
     createFolder,
     shareFolder,
@@ -149,5 +162,6 @@ export const StorageControllers = {
     shareFile,
     duplicateFile,
     updateFile,
-    deleteFile
+    deleteFile,
+    getData,
 };

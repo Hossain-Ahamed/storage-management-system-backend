@@ -15,4 +15,5 @@ export default {
   JWT_REFRESH_EXPIRES_IN: process.env.JWT_ACCESS_EXPIRES_IN,
   RESET_PASSWORD_URI: process.env.RESET_PASSWORD_URI,
   GOOGLE_CLIENT_ID : process.env.GOOGLE_CLIENT_ID,
+  SERVER_URL : process.env.SERVER_URL,
 };

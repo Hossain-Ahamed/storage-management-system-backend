@@ -7,7 +7,9 @@ import { logger } from './middlewares/logger';
 import { notFound } from './middlewares/notFound';
 import router from './routes';
 import cookieParser from 'cookie-parser';
-
+import { FileModel } from './app/modules/StorageSytem/storageSystem.model';
+import path from 'path';
+import { auth } from './middlewares/auth';
 const app = express();
 
 //parser
@@ -26,10 +28,12 @@ app.use(cookieParser());
 
 /*------------ APPLICATION ROUTES -------------------*/
 app.use('/', router);
-
+app.use('/uploads', auth(), express.static(path.join(process.cwd(), 'uploads')));
 /*------------ Test route -------------------*/
-const test = (req: Request, res: Response) => {
-  res.send('server is RUNNIG !!! 😎😎😎');
+const test = async(req: Request, res: Response) => {
+  console.log(req.query)
+  res.send(await FileModel.findById('678e43ff81048cb69a24b2cd'))
+  // res.send('server is RUNNIG !!! 😎😎😎');
 };
 app.get('/', test);
 

@@ -1,6 +1,6 @@
 import { model, Schema } from "mongoose"
 import { TFile, TFolder } from "./storageSystem.interface"
-
+import config from "../../config";
 const FolderSchema = new Schema<TFolder>(
     {
         userID: {
@@ -40,7 +40,7 @@ const FolderSchema = new Schema<TFolder>(
     },
 )
 
-export const FolderModel = model<TFolder>('Folder', FolderSchema);
+
 
 FolderSchema.pre('save', async function (next) {
     const folder = this as TFolder;
@@ -68,6 +68,7 @@ FolderSchema.pre('aggregate', function (next) {
     this.pipeline().unshift({ $match: { isDeleted: { $ne: true } } });
     next();
 });
+export const FolderModel = model<TFolder>('Folder', FolderSchema);
 
 const FileSchema = new Schema<TFile>(
     {
@@ -122,18 +123,24 @@ const FileSchema = new Schema<TFile>(
     },
     {
         timestamps: true,
+        toJSON: {
+            virtuals: true,
+        },
     },
 )
+FileSchema.virtual('pathName').get(function () {
+    const baseURL = config.SERVER_URL 
+    return `${baseURL}/uploads/${this.uniqueFileName}`;
+  });
+  
 
 
-
-export const FileModel = model<TFile>('File', FileSchema);
 
 FileSchema.pre('save', async function (next) {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const file = this;
 
-   
+
     if (file.userID && !file.access.includes(file.userID)) {
         file.access.push(file.userID);
     }
@@ -156,3 +163,4 @@ FileSchema.pre('aggregate', function (next) {
     this.pipeline().unshift({ $match: { isDeleted: { $ne: true } } });
     next();
 });
+export const FileModel = model<TFile>('File', FileSchema);

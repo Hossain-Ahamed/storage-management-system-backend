@@ -217,6 +217,20 @@ const changeName = catchAsync(async (req, res) => {
         data: result,
     });
 });
+
+// get my profile
+const getMyProfile = catchAsync(async (req, res) => {
+ const {email} = req.user;
+
+    const result = await UserServices.getMyProfile(email);
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Porfile data retrieved successfully',
+        data: result,
+    });
+});
 export const UserControllers = {
     signUpUserByEmailandPassword,
     LoginUserByEmailandPassword,
@@ -230,5 +244,6 @@ export const UserControllers = {
     changeName,
     createPinForSecureFolder,
     LoginToSecureFolder,
-    logOutFromSecureFolder
+    logOutFromSecureFolder,
+    getMyProfile
 };
