@@ -47,4 +47,12 @@ router.post(
     UserControllers.resetPassword,
 );
 
+
+router.post(
+    '/create-PIN',
+    auth(),
+    validateRequest(UserValidation.PinValidationSchema),
+    UserControllers.createPinForSecureFolder,
+);
+
 export const UserRouter = router;

@@ -531,17 +531,97 @@ const resetPassword = async (token: string, password: string) => {
     const updateResult = await User.updateOne(
         { _id: user._id },
         {
-          $unset: { verificationInfo: 1 }, 
+            $unset: { verificationInfo: 1 },
         }
-      );
-    
-      if (!updateResult.matchedCount || !updateResult.modifiedCount) {
+    );
+
+    if (!updateResult.matchedCount || !updateResult.modifiedCount) {
         throw new AppError(httpStatus.BAD_REQUEST, 'Failed to remove verification information');
-      }
-    
+    }
+
     return null;
 
 };
+
+const createPinForSecureFolder = async (userData: JwtPayload, PIN: string) => {
+
+    // check if the userExist
+    const user = await User.isUserExistsByEmail(userData.email);
+
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+    }
+    // checking if the user is already deleted
+    const isDeleted = user?.isDeleted;
+    if (isDeleted) {
+        throw new AppError(
+            httpStatus.FORBIDDEN,
+            'User is already removed from system',
+        );
+    }
+
+    if (user.secureFolderPin || user.securedrootFolderID) {
+        throw new AppError(httpStatus.CONFLICT, 'Pin and folder Already Created')
+    }
+
+
+    const session = await mongoose.startSession();
+    try {
+        session.startTransaction();
+
+        const securefolderData = {
+            userID: user._id,
+            folderName: 'Secured_Root',
+            access: [user._id],
+            isSecured: true
+        }
+        // Create the secured root folder
+        const securedRootFolder = await FolderModel.create([securefolderData], { session });
+
+        if (!securedRootFolder.length) {
+            throw new AppError(httpStatus.BAD_REQUEST, 'Failed to create secured Root folder');
+        }
+
+        const HashedPin = await bcrypt.hash(
+            PIN,
+            Number(config.bcrypt_salt_round),
+        );
+        //Update the user with rootFolderID
+        const updateResult = await User.updateOne(
+            { _id: user._id },
+            {
+                securedrootFolderID: securedRootFolder[0]._id,
+                secureFolderPin: HashedPin
+
+            },
+            { session }
+        );
+
+        if (!updateResult.matchedCount || !updateResult.modifiedCount) {
+            throw new AppError(httpStatus.BAD_REQUEST, 'Failed to associate root folder with user');
+        }
+
+
+        await session.commitTransaction();
+
+
+
+        return null;
+    } catch (error) {
+
+        await session.abortTransaction();
+
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            (error as Error).message || 'An unknown error occurred',
+            (error as Error)?.stack,
+        );
+    } finally {
+
+        await session.endSession();
+    }
+
+}
 export const UserServices = {
     SignUp,
     login,
@@ -550,5 +630,7 @@ export const UserServices = {
     getAccessToken,
     forgetPassword,
     verifyOTP,
-    resetPassword
+    resetPassword,
+
+    createPinForSecureFolder,
 }

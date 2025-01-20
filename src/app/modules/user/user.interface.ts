@@ -12,8 +12,9 @@ export interface TUser {
     email: string;
     password?: string;
     passwordChangedAt?: Date;
-    secureFolderPin?: string;
     rootFolderID : Types.ObjectId;
+    securedrootFolderID : Types.ObjectId;
+    secureFolderPin?: string;
     limit : number;
     verificationInfo : TUserVerificationInfo
     isDeleted: boolean;

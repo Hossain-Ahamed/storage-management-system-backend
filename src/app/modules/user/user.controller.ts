@@ -89,7 +89,7 @@ const forgetPassword = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: 'Reset link is sent successfully',
+        message: 'OTP sent successfully',
         data: result,
     });
 });
@@ -131,6 +131,20 @@ const resetPassword = catchAsync(async (req, res) => {
     });
 });
 
+
+const createPinForSecureFolder = catchAsync(async (req, res) => {
+    const PIN = req.body?.PIN;
+
+    const result = await UserServices.createPinForSecureFolder(req.user, PIN);
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Secured Root folder and PIN added successfully',
+        data: result,
+    });
+});
+
 export const UserControllers = {
     signUpUserByEmailandPassword,
     LoginUserByEmailandPassword,
@@ -139,5 +153,6 @@ export const UserControllers = {
     getAccessToken,
     forgetPassword,
     verifyOTP,
-    resetPassword
+    resetPassword,
+    createPinForSecureFolder
 };

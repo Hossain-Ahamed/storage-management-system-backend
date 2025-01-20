@@ -41,16 +41,19 @@ const userSchema = new Schema<TUser>(
         passwordChangedAt: {
             type: Date,
         },
+        rootFolderID: {
+            type: Schema.Types.ObjectId,
+            ref: 'Folder',
+        },
+        securedrootFolderID: {
+            type: Schema.Types.ObjectId,
+            ref: 'Folder',
+        },
         secureFolderPin: {
             type: String,
             select: 0,
         },
         verificationInfo: UserVerificationInfoSchema,
-        rootFolderID: {
-            type: Schema.Types.ObjectId,
-            ref: 'Folder',
-
-        },
         limit: {
             type: Number,
             default: 15 * 1024 * 1024 * 1024,
@@ -73,7 +76,7 @@ userSchema.pre('save', async function (next) {
             Number(config.bcrypt_salt_round)
         );
     }
-
+console.log(user.secureFolderPin)
     // Hash secureFolderPin 
     if (user.secureFolderPin) {
         user.secureFolderPin = await bcrypt.hash(

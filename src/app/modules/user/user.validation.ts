@@ -59,6 +59,11 @@ const resetPasswordValidationSchema = z.object({
     }),
 });
 
+const PinValidationSchema = z.object({
+    body: z.object({
+        PIN : z.string({required_error : 'Pin is required'})
+    }),
+});
 export const UserValidation = {
     SignUpByEmailAndPasswordValidationSchema,
     loginValidationSchema,
@@ -67,5 +72,7 @@ export const UserValidation = {
     ChangePasswordValidationSchema,
     loginWithGoogleValidationSchema,
     verifyOTPValidationSchema,
-    resetPasswordValidationSchema
+    resetPasswordValidationSchema,
+
+    PinValidationSchema
 };
