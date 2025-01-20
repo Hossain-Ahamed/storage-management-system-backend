@@ -98,7 +98,7 @@ const googleAuth = async (tokenId: string) => {
 
             const RootfolderData = {
                 userID: user[0]._id,
-                folderName: 'Root',
+                folderName: 'My Folder',
                 access: [user[0]._id],
             }
 
@@ -196,7 +196,7 @@ const SignUp = async (payload: TUser) => {
 
         const RootfolderData = {
             userID: user[0]._id,
-            folderName: 'Root',
+            folderName: 'My Folder',
             access: [user[0]._id],
         }
 
@@ -571,7 +571,7 @@ const createPinForSecureFolder = async (userData: JwtPayload, PIN: string) => {
 
         const securefolderData = {
             userID: user._id,
-            folderName: 'Secured_Root',
+            folderName: 'Secured Folder',
             access: [user._id],
             isSecured: true
         }
@@ -640,7 +640,7 @@ const LoginToSecureFolder = async (userData: JwtPayload, PIN: string)  => {
             'User is already removed from system',
         );
     }
-console.log(user)
+
     if (!user.secureFolderPin || !user.securedrootFolderID) {
         throw new AppError(httpStatus.BAD_REQUEST, 'Pin and secure folder are not created')
     }

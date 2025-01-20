@@ -24,3 +24,9 @@ export type TFile = {
     FolderID:Types.ObjectId;
     access : Types.ObjectId[];
 }
+
+export type TFolderInfo = {
+    parentFolderID : Types.ObjectId;
+    allowedUser : Types.ObjectId[];
+    isSecured : boolean;
+}
