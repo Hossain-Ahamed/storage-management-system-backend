@@ -6,7 +6,7 @@ import httpStatus from 'http-status';
 import AppError from "../../errors/AppError";
 
 const createFolder: RequestHandler = catchAsync(async (req, res) => {
-    const { isSecured, parentFolderID, userID } = req.folderInfo;
+    const { isSecured, parentFolderID, userID } = req.info;
     const folderName = req.body?.folderName;
     const { email } = req.user
     const result = await StorageServices.createFolder(folderName, isSecured, parentFolderID, userID, email);
@@ -73,25 +73,81 @@ const deleteFolder: RequestHandler = catchAsync(async (req, res) => {
  * ----------------------- File Management --------------------------
  */
 
-const createFile : RequestHandler = catchAsync(async (req, res) => {
-    const folderInfo = req.folderInfo;
-    const {email} = req.user;
-    const result = await StorageServices.createFile(req.file,folderInfo,email);
-  
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: 'New file uploaded successfully',
-      data: result,
-    });
-  });
-  
+const createFile: RequestHandler = catchAsync(async (req, res) => {
+    const folderInfo = req.info;
+    const { email } = req.user;
+    const result = await StorageServices.createFile(req.file, folderInfo, email);
 
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'New file uploaded successfully',
+        data: result,
+    });
+});
+
+const shareFile: RequestHandler = catchAsync(async (req, res) => {
+    const fileID = req.body?.fileID;
+    const email = req.body?.email
+    const result = await StorageServices.shareFile(fileID, email);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'File shared successfully',
+        data: result,
+    });
+});
+
+const duplicateFile: RequestHandler = catchAsync(async (req, res) => {
+
+    const {email} = req.user;
+    const result = await StorageServices.duplicateFile(req.body?.fileID,email);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'File is duplicated successfully',
+        data: result,
+    });
+});
+
+const updateFile: RequestHandler = catchAsync(async (req, res) => {
+    const fileID = req.query?.fileID;
+
+    if (!fileID || Array.isArray(fileID)) {
+        throw new AppError(httpStatus.BAD_REQUEST, 'File ID is required');
+    }
+    const result = await StorageServices.updateFile(fileID as string, req.body);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'File is updated successfully',
+        data: result,
+    });
+});
+
+const deleteFile: RequestHandler = catchAsync(async (req, res) => {
+    const fileID = req.query?.fileID;
+
+    if (!fileID || Array.isArray(fileID)) {
+        throw new AppError(httpStatus.BAD_REQUEST, 'Folder ID is required');
+    }
+    const result = await StorageServices.deleteFile(fileID as string);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'File is deleted successfully',
+        data: result,
+    });
+});
 export const StorageControllers = {
     createFolder,
     shareFolder,
     duplicateFolder,
     updateFolder,
     deleteFolder,
-    createFile
+    createFile,
+    shareFile,
+    duplicateFile,
+    updateFile,
+    deleteFile
 };

@@ -27,7 +27,7 @@ export type TFile = {
     access : Types.ObjectId[];
 }
 
-export type TFolderInfo = {
+export type info = {
     userID : Types.ObjectId; 
     parentFolderID : Types.ObjectId;
     allowedUser : Types.ObjectId[];

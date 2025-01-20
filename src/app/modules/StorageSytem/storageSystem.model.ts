@@ -79,7 +79,6 @@ const FileSchema = new Schema<TFile>(
         uniqueFileName: {
             type: String,
             required: true,
-            unique: true
         },
         path: {
             type: String,

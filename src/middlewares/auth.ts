@@ -6,8 +6,8 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import config from '../app/config';
 import { User } from '../app/modules/user/user.model';
 import { TUser } from '../app/modules/user/user.interface';
-import { FolderModel } from '../app/modules/StorageSytem/storageSystem.model';
-import { TFolderInfo } from '../app/modules/StorageSytem/storageSystem.interface';
+import { FileModel, FolderModel } from '../app/modules/StorageSytem/storageSystem.model';
+import { info } from '../app/modules/StorageSytem/storageSystem.interface';
 
 
 const authenticateUser = async (req: Request): Promise<{ decoded: JwtPayload; user: TUser }> => {
@@ -118,58 +118,116 @@ export const auth = () => {
 
 
 
-export const isAllowed = () => {
+export const isAllowed = (typeOfData: 'file' | 'folder') => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
     const { decoded, user } = await authenticateUser(req);
 
-    /**
-     * parentFolder source : 
-     *         1. who needs parent Folder they will use 'parentFolderID'
-     *         2. who doesn't need they will use 'folderID'
-     *         3. or req.query.folderID
-     *        
-     */
-    const parentFolderID = req.body?.parentFolderID || req.body?.folderID || req.query?.folderID;
-    if (!parentFolderID) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'Parent folder ID is required');
-    }
 
-    const parentFolderData = await FolderModel.findOne({
-      _id: parentFolderID,
-      $or: [
-        { userID: user._id }, //own folder
-        { access: { $in: [user._id] } }, // get access by owner
-      ],
-      isDeleted: false,
-    });
-    if (!parentFolderData) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'File is not available');
-    }
-
-    if (parentFolderData.isSecured) {
-      const { secureFolderToken } = req.cookies;
-      if (!secureFolderToken) {
-        throw new AppError(httpStatus.UNAUTHORIZED, 'Unauthorized to access secure folder');
+    if (typeOfData === 'folder') {
+      /**
+        * parentFolder source : 
+        *         1. who needs parent Folder they will use 'parentFolderID'
+        *         2. who doesn't need they will use 'folderID'
+        *         3. or req.query.folderID
+        *        
+        */
+      const parentFolderID = req.body?.parentFolderID || req.body?.folderID || req.query?.folderID;
+      if (!parentFolderID) {
+        throw new AppError(httpStatus.BAD_REQUEST, 'Parent folder ID is required');
       }
 
-      // Validate the secure folder token
-      // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-      const secureTokenData = jwt.verify(
-        secureFolderToken,
-        config.JWT_ACCESS_SECRET as string
-      ) as JwtPayload;
+      const parentFolderData = await FolderModel.findOne({
+        _id: parentFolderID,
+        $or: [
+          { userID: user._id }, //own folder
+          { access: { $in: [user._id] } }, // get access by owner
+        ],
+        isDeleted: false,
+      });
+      if (!parentFolderData) {
+        throw new AppError(httpStatus.BAD_REQUEST, 'File is not available');
+      }
+
+      if (parentFolderData.isSecured) {
+        const { secureFolderToken } = req.cookies;
+        if (!secureFolderToken) {
+          throw new AppError(httpStatus.UNAUTHORIZED, 'Unauthorized to access secure folder');
+        }
+
+        // Validate the secure folder token
+        // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+        const secureTokenData = jwt.verify(
+          secureFolderToken,
+          config.JWT_ACCESS_SECRET as string
+        ) as JwtPayload;
+      }
+
+      const folderInfo: info = {
+        userID: parentFolderData.userID,
+        parentFolderID: parentFolderData._id,
+        allowedUser: parentFolderData.access,
+        isSecured: parentFolderData.isSecured
+      }
+
+
+
+      req.user = decoded;
+      req.info = folderInfo;
+    }
+    else if (typeOfData === 'file') {
+
+      /**
+        * file source : 
+        *         1. who needs parent Folder they will use 'fileID'
+        *         2. who doesn't need they will use 'fileID'
+        *         3. or req.query.fileID
+        *        
+        */
+      const fileID = req.body?.fileID || req.body?.fileID || req.query?.fileID;
+      if (!fileID) {
+        throw new AppError(httpStatus.BAD_REQUEST, 'File ID is required');
+      }
+
+      const fileData = await FileModel.findOne({
+        _id: fileID,
+        $or: [
+          { userID: user._id }, //own folder
+          { access: { $in: [user._id] } }, // get access by owner
+        ],
+        isDeleted: false,
+      });
+      if (!fileData) {
+        throw new AppError(httpStatus.BAD_REQUEST, 'File is not available');
+      }
+
+      if (fileData.isSecured) {
+        const { secureFolderToken } = req.cookies;
+        if (!secureFolderToken) {
+          throw new AppError(httpStatus.UNAUTHORIZED, 'Unauthorized to access secure folder');
+        }
+
+        // Validate the secure folder token
+        // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+        const secureTokenData = jwt.verify(
+          secureFolderToken,
+          config.JWT_ACCESS_SECRET as string
+        ) as JwtPayload;
+      }
+
+      const folderInfo: info = {
+        userID: fileData.userID,
+        parentFolderID: fileData.folderID,
+        allowedUser: fileData.access,
+        isSecured: fileData.isSecured
+      }
+
+
+
+      req.user = decoded;
+      req.info = folderInfo;
     }
 
-    const folderInfo: TFolderInfo = {
-      userID : parentFolderData.userID,
-      parentFolderID: parentFolderData._id,
-      allowedUser: parentFolderData.access,
-      isSecured: parentFolderData.isSecured
-    }
-
-    req.user = decoded;
-    req.folderInfo = folderInfo;
     next();
   });
 };

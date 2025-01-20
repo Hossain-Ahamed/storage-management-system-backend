@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
   },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-unused-vars
   filename: (req: Request, file: any, cb: (error: Error | null, filename: string) => void) => {
-    const userID = req.folderInfo?.userID || 'anonymous'; // Assume `req.user` has user info with `_id`
+    const userID = req.info?.userID || 'anonymous'; // Assume `req.user` has user info with `_id`
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     const fileExtension = path.extname(file.originalname);
     cb(null, `${file.fieldname}-${userID}-${uniqueSuffix}${fileExtension}`);
